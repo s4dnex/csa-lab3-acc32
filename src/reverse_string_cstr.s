@@ -49,6 +49,7 @@ reverse_str:
     ; set index of last symbol
     load_imm     -1
     add          str_length
+    ble          exit
     store_addr   right_ptr
 
 reverse_str_loop:
@@ -108,4 +109,5 @@ print_reversed_str:
     sub          str_length
     ble          print_reversed_str
 
+exit:
     halt
