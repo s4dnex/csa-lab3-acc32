@@ -5,7 +5,7 @@ memory_size: 8192      # Memory size in bytes
 # I/O configuration
 memory_mapped_io:
   0x80: ['hello', 0xA]   # Input values at address 0x80
-  0x84: []                 # Output-only port at address 0x84
+  0x84: []               # Output-only port at address 0x84
 
 # Reports configuration
 reports:
@@ -14,18 +14,12 @@ reports:
     view: |
       {pc}: {instruction} {pc:label}
       str: {memory:0x0:0x1F}
-      numio[0x80]: {io:0x80:sym}
-      numio[0x84]: {io:0x84:sym}
       acc: {Acc:hex} {Acc:dec}
-      str_length: {memory:0x54:0x57}
       temp_swap: {memory:0x68:0x6B}
       temp_remainder: {memory:0x6C:0x6F}
-#      null_sym: {memory:0x50:0x53}
-#      underscore_fill: {memory:0x5C:0x5F}
-#      char_mask: {memory:0x58:0x5B}
-#      left_ptr: {memory:0x60:0x63}
-#      right_ptr: {memory:0x64:0x67}
-
+      left_ptr: {memory:0x60:0x63}
+      right_ptr: {memory:0x64:0x67}
+  
   - name: "Result verification"
     slice: last
     view: |
