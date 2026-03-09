@@ -14,6 +14,7 @@ temp_swap:       .word  0
 temp_remainder:  .word  0
 remainder_mask:  .word  0xFFFFFF00
 i:               .word  0
+null_term_index: .word  -1
 
     .text
     .org         0x100
@@ -24,6 +25,13 @@ read_line_loop:
     or           underscore_fill
     store_ind    str_length
     and          char_mask
+    jmp          check_null_term
+return_check_null_term:
+    ; return state of accumulator after method call
+    load_addr    str_length
+    load_acc
+    and          char_mask
+    ;
     sub          null_sym
     beqz         reverse_str
 
@@ -40,6 +48,17 @@ read_line_loop:
     store_addr   0x84
     halt
 
+check_null_term:
+    ; if not \0, return back
+    bnez         return_check_null_term
+    ; if already found \0 before, return back
+    load_addr    null_term_index
+    bgt          return_check_null_term
+    ; found \0, save its index
+    load_addr    str_length
+    store_addr   null_term_index
+    jmp          return_check_null_term
+
 reverse_str:
     ; replace \n symbol with \0
     load_imm     0
@@ -47,6 +66,10 @@ reverse_str:
     store_ind    str_length
 
     ; set index of last symbol
+    load_addr    null_term_index
+    ble          take_str_length
+    store_addr   str_length
+take_str_length:
     load_imm     -1
     add          str_length
     ble          exit
