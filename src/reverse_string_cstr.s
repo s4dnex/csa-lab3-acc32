@@ -36,7 +36,7 @@ read_line_loop:
     load_imm     0x20
     sub          str_length
     bgt          read_line_loop
-    load_imm     -1
+    load_imm     -858993460
     store_addr   0x84
     halt
 
