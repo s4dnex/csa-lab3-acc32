@@ -2,7 +2,7 @@
 
 > Вариант: **reverse_string_cstr**
 > 
-> Wrench Simulation Report: https://wrench.edu.swampbuds.me/report/581fa1c9-5288-49b1-97dc-6d9effa6c781 
+> Wrench Simulation Report: https://wrench.edu.swampbuds.me/report/e90c61aa-bdc6-4f2c-8399-b83c468b5e02
 
 ```python
 def reverse_string_cstr(s):
