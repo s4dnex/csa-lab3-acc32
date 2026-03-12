@@ -2,91 +2,100 @@
 .org             0x0
 str:             .byte  '________________________________'
 
+
+
     .data
-.org             0x50
-null_sym:        .word  '\n'
-str_length:      .word  0
+.org             0x100
+buffer_size:     .word  0x20
+input_addr:      .word  0x80
+output_addr:     .word  0x84
+str_length:      .word  0                  ; also pointer for next char
 char_mask:       .word  0xFF
-underscore_fill: .word  0x5F5F5F00
+underscore_fill: .word  0x5F5F5F00         ; '___0'
+null_term_idx:   .word  -1
+new_line_char:   .word  '\n'
 left_ptr:        .word  0
 right_ptr:       .word  0
 temp_swap:       .word  0
 temp_remainder:  .word  0
 remainder_mask:  .word  0xFFFFFF00
 i:               .word  0
-null_term_index: .word  -1
+
+
 
     .text
-    .org         0x100
+.org             0x200
 _start:
 read_line_loop:
-    ; get next symbol of string
-    load_addr    0x80
+    ; load next char from input
+    load         input_addr
+    load_acc
+    ; keep only char value and fill remainder with underscores
+    and          char_mask
     or           underscore_fill
+    ; store char in buffer
     store_ind    str_length
     and          char_mask
-    jmp          check_null_term
-return_check_null_term:
-    ; return state of accumulator after method call
-    load_addr    str_length
-    load_acc
-    and          char_mask
-    ;
-    sub          null_sym
-    beqz         reverse_str
 
-    ; increment string length value & set next char pointer
+check_null_char:
+    ; if not \0, jump to check for \n
+    bnez         check_new_line
+    ; if already found \0 before then incorrect string
+    load         null_term_idx
+    bgt          incorrect_input
+    ; save index of \0
+    load         str_length
+    store        null_term_idx
+    jmp          read_line_condition
+
+check_new_line:
+    sub          new_line_char
+    beqz         reverse_string
+
+read_line_condition:
+    ; increment string length value
     load_imm     1
     add          str_length
-    store_addr   str_length
+    store        str_length
 
-    ; check if string is longer than buffer size
-    load_imm     0x20
+    ; check if next char will overflow buffer size
+    load         buffer_size
     sub          str_length
     bgt          read_line_loop
-    load_imm     0xCCCCCCCC
-    store_addr   0x84
-    halt
+    jmp          buffer_overflow
 
-check_null_term:
-    ; if not \0, return back
-    bnez         return_check_null_term
-    ; if already found \0 before, return back
-    load_addr    null_term_index
-    bgt          return_check_null_term
-    ; found \0, save its index
-    load_addr    str_length
-    store_addr   null_term_index
-    jmp          return_check_null_term
 
-reverse_str:
+
+reverse_string:
     ; replace \n symbol with \0
     load_imm     0
     or           underscore_fill
     store_ind    str_length
 
-    ; set index of last symbol
-    load_addr    null_term_index
-    ble          take_str_length
-    store_addr   str_length
-take_str_length:
+    ; if \0 was in string, then take chars only until its index
+    load_addr    null_term_idx
+    ble          init_right_ptr
+    store        str_length
+
+init_right_ptr:
+    ; set value of right pointer as index of last char
     load_imm     -1
     add          str_length
     ble          exit
-    store_addr   right_ptr
+    store        right_ptr
 
 reverse_str_loop:
     ; save symbol from the right
     load_addr    right_ptr
     load_acc
     and          char_mask
-    store_addr   temp_swap
+    store        temp_swap
 
     ; save remainder from the right
     load_addr    right_ptr
     load_acc
     and          remainder_mask
-    store_addr   temp_remainder
+    store        temp_remainder
 
     ; get symbol from the left, concat with right remainder and save to the right
     load_addr    left_ptr
@@ -105,32 +114,47 @@ reverse_str_loop:
     ; increment left pointer
     load_imm     1
     add          left_ptr
-    store_addr   left_ptr
+    store        left_ptr
 
     ; decrement right pointer
     load_imm     -1
     add          right_ptr
-    store_addr   right_ptr
+    store        right_ptr
 
     ; if left pointer >= right pointer, we reversed string
     sub          left_ptr
     bgt          reverse_str_loop
 
+
+
 print_reversed_str:
     ; get i-th symbol
-    load_addr    i
+    load         i
     load_acc
     and          char_mask
-    store_addr   0x84
+    store_ind    output_addr
 
     ; increment index
     load_imm     1
     add          i
-    store_addr   i
+    store        i
 
     ; if i < string length, continue
     sub          str_length
     ble          print_reversed_str
+    jmp          exit
+
+
+
+buffer_overflow:
+    load_imm     0xCCCCCCCC
+    store_ind    output_addr
+    halt
+
+incorrect_input:
+    load_imm     -1
+    store_ind    output_addr
+    halt
 
 exit:
     halt
