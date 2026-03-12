@@ -13,10 +13,9 @@ reports:
     slice: all
     view: |
       {pc}: {instruction} {pc:label}
+      numio[0x80]: {io:0x84:sym}
       str: {memory:0x0:0x1F}
       acc: {Acc:hex} {Acc:dec}
-      temp_swap: {memory:0x68:0x6B}
-      temp_remainder: {memory:0x6C:0x6F}
       left_ptr: {memory:0x60:0x63}
       right_ptr: {memory:0x64:0x67}
   
