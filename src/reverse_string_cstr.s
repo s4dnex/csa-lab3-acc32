@@ -1,3 +1,5 @@
+; TODO: decrease memory waste by removing empty spaces between sections
+
     .data
 .org             0x0
 str:             .byte  '________________________________'
@@ -67,7 +69,7 @@ read_line_condition:
 
 
 reverse_string:
-    ; replace \n symbol with \0
+    ; replace \n with \0
     load_imm     0
     or           underscore_fill
     store_ind    str_length
@@ -85,7 +87,7 @@ init_right_ptr:
     store        right_ptr
 
 reverse_str_loop:
-    ; save symbol from the right
+    ; save char from the right
     load_addr    right_ptr
     load_acc
     and          char_mask
@@ -97,14 +99,14 @@ reverse_str_loop:
     and          remainder_mask
     store        temp_remainder
 
-    ; get symbol from the left, concat with right remainder and save to the right
+    ; get char from the left, concat with right remainder and save to the right
     load_addr    left_ptr
     load_acc
     and          char_mask
     or           temp_remainder
     store_ind    right_ptr
 
-    ; get remainder from the left, concat with right symbol (from temp_swap) and save to the left
+    ; get remainder from the left, concat with right char (from temp_swap) and save to the left
     load_addr    left_ptr
     load_acc
     and          remainder_mask
@@ -142,19 +144,17 @@ print_reversed_str:
     ; if i < string length, continue
     sub          str_length
     ble          print_reversed_str
-    jmp          exit
-
-
-
-buffer_overflow:
-    load_imm     0xCCCCCCCC
-    store_ind    output_addr
-    halt
-
-incorrect_input:
-    load_imm     -1
-    store_ind    output_addr
-    halt
 
 exit:
     halt
+
+buffer_overflow:
+    load_imm     0xCCCCCCCC
+    jmp          error_exit
+
+incorrect_input:
+    load_imm     -1
+
+error_exit:
+    store_ind    output_addr
+    jmp          exit
