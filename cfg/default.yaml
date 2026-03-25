@@ -16,8 +16,6 @@ reports:
       numio[0x80]: {io:0x84:sym}
       str: {memory:0x0:0x1F}
       acc: {Acc:hex} {Acc:dec}
-      left_ptr: {memory:0x60:0x63}
-      right_ptr: {memory:0x64:0x67}
   
   - name: "Result verification"
     slice: last
